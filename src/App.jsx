@@ -3,6 +3,8 @@ import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import Dashboard from './pages/Dashboard'
+import Landing from './pages/Landing'
+import Profile from './pages/Profile'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import NotFound from './pages/NotFound'
 import { useAuth } from './context/AuthContext'
@@ -18,12 +20,13 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={currentUser ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={!currentUser ? <Login /> : <Navigate to="/dashboard" />} />
       <Route path="/register" element={!currentUser ? <Register /> : <Navigate to="/dashboard" />} />
       <Route path="/forgot-password" element={!currentUser ? <ForgotPassword /> : <Navigate to="/dashboard" />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>

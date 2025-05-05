@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { FiLogOut, FiMenu, FiUser, FiPlus, FiX, FiSearch, FiCloud } from 'react-icons/fi'
+import { FiLogOut, FiMenu, FiUser, FiPlus, FiX, FiSearch, FiCloud, FiChevronDown } from 'react-icons/fi'
 import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { db } from '../firebase'
 import { collection, query, where, orderBy, onSnapshot, addDoc, deleteDoc, doc, updateDoc, getDocs } from 'firebase/firestore'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -23,7 +23,8 @@ const Dashboard = () => {
   const [sortBy, setSortBy] = useState('name')
   const [selectedContact, setSelectedContact] = useState(null)
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, contact: null })
-  
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
   useEffect(() => {
     const contactsRef = collection(db, 'contacts')
     const q = query(
@@ -156,6 +157,58 @@ const Dashboard = () => {
     { value: 'date', label: 'Sort by date' }
   ]
 
+  const UserMenu = () => (
+    <div className="relative">
+      <button
+        onClick={() => setDropdownOpen(!dropdownOpen)}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-all duration-200"
+      >
+        <FiUser className="text-primary-400" />
+        <span>{currentUser?.displayName || 'Profile'}</span>
+        <FiChevronDown className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {dropdownOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-30"
+              onClick={() => setDropdownOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg border border-gray-700 shadow-xl overflow-hidden z-40"
+            >
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                onClick={() => setDropdownOpen(false)}
+              >
+                <FiUser className="text-primary-400" />
+                Profile Settings
+              </Link>
+              <button
+                onClick={() => {
+                  setDropdownOpen(false)
+                  handleLogout()
+                }}
+                className="flex items-center gap-2 w-full px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+              >
+                <FiLogOut className="text-primary-400" />
+                Logout
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
       {/* Header */}
@@ -169,62 +222,9 @@ const Dashboard = () => {
               </span>
             </h1>
             
-            {/* Desktop menu */}
-            <nav className="hidden md:flex items-center gap-2">
-              <button 
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-all duration-200"
-              >
-                <FiUser className="text-primary-400" />
-                <span>{currentUser?.displayName || 'Profile'}</span>
-              </button>
-              
-              <button 
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-all duration-200"
-              >
-                <FiLogOut className="text-primary-400" />
-                <span>Logout</span>
-              </button>
-            </nav>
-            
-            {/* Mobile menu button */}
-            <button 
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200"
-            >
-              {menuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-            </button>
+            <UserMenu />
           </div>
         </div>
-        
-        {/* Mobile menu */}
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="md:hidden border-b border-gray-800"
-            >
-              <div className="px-2 pt-2 pb-3 space-y-1">
-                <button 
-                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-all duration-200"
-                >
-                  <FiUser className="text-primary-400" />
-                  <span>{currentUser?.displayName || 'Profile'}</span>
-                </button>
-                
-                <button 
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-all duration-200"
-                >
-                  <FiLogOut className="text-primary-400" />
-                  <span>Logout</span>
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </header>
       
       {/* Main content */}
@@ -237,7 +237,7 @@ const Dashboard = () => {
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="btn-primary flex items-center p-1.5 rounded-xl gap-2 group px-6"
+              className="btn-primary flex items-center gap-2 group px-6 p-1.5 rounded-xl"
             >
               <FiPlus className="transform transition-all duration-200 group-hover:rotate-90" />
               Add Contact
@@ -256,7 +256,7 @@ const Dashboard = () => {
             className="space-y-6"
           >
             {/* Search and filters */}
-            <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="relative flex-1 w-full">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <FiSearch className="text-gray-400" />
@@ -302,7 +302,7 @@ const Dashboard = () => {
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="btn-primary flex items-center gap-2 group px-6"
+              className="btn-primary flex items-center gap-2 group px-6 p-3 rounded-xl"
             >
               <FiPlus className="transform transition-all duration-200 group-hover:rotate-90" />
               Add Your First Contact

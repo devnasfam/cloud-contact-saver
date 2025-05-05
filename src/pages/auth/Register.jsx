@@ -147,7 +147,7 @@ const Register = () => {
   }
 
   return (
-    <main className="mx-auto px-20 py-6 space-y-6 pb-20 pt-20 md:pb-6">
+    <main className="mx-auto py-6 space-y-6 pb-20 pt-20 md:pb-6">
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
       <div className="flex items-center mb-8 transform transition-all duration-300 hover:scale-105">
         <FiCloud className="text-primary-400 mr-2 text-4xl" />
